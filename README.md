@@ -14,6 +14,9 @@ the things most toy backtests get wrong.
 - **Event-driven loop**: bars stream in, the strategy returns orders, the
   broker tracks cash/position, the equity curve is marked to market on every
   bar close.
+- **Position sizing** (`bt/sizing.py`): fixed-risk (size from stop distance)
+  and volatility-target sizings. How much to risk matters more than the
+  signal, so it gets its own module.
 - **Reference strategies**: buy & hold and an SMA crossover, used as the
   sanity-check benchmark every engine needs.
 - **Performance stats**: total return, CAGR, Sharpe, max drawdown.
@@ -56,7 +59,7 @@ tests/            unittest suite
 
 ## Roadmap
 
-- Short selling and position sizing layer (risk-based sizing, not all-in)
+- Short selling
 - More strategies (mean reversion, breakout) with the same discipline
 - Parameter sweep harness with out-of-sample split
 - Trade log export (CSV) and per-trade analytics

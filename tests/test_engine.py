@@ -71,3 +71,20 @@ class TestStats(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSizing(unittest.TestCase):
+    def test_fixed_risk(self):
+        from bt.sizing import fixed_risk
+        # risk 1% of 10k = 100; stop 5 away -> 20 units
+        self.assertAlmostEqual(fixed_risk(10_000.0, 0.01, 100.0, 95.0), 20.0)
+
+    def test_fixed_risk_zero_distance_raises(self):
+        from bt.sizing import fixed_risk
+        with self.assertRaises(ValueError):
+            fixed_risk(10_000.0, 0.01, 100.0, 100.0)
+
+    def test_volatility_target(self):
+        from bt.sizing import volatility_target
+        # 20% target on 10k = 2000 vol budget; price 100, vol 20% -> 200 units
+        self.assertAlmostEqual(volatility_target(10_000.0, 0.20, 100.0, 0.20), 100.0)
