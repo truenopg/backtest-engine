@@ -21,6 +21,9 @@ the things most toy backtests get wrong.
   Bollinger-style mean-reversion strategy - sanity-check benchmarks every
   engine needs.
 - **Performance stats**: total return, CAGR, Sharpe, max drawdown.
+- **Parameter sweeps** (`bt/sweep.py`): grid-search any strategy over a
+  chronological in-sample / out-of-sample split, and see the overfitting tax
+  directly - the best in-sample params usually do not hold up out-of-sample.
 - **Synthetic data**: a GBM generator so everything runs without a data
   vendor, plus a CSV loader for real data (ts, open, high, low, close, volume).
 
@@ -59,6 +62,7 @@ bt/broker.py      cash/position accounting + cost model
 bt/engine.py      event loop (next-bar fills)
 bt/strategies.py  reference strategies
 bt/stats.py       performance statistics
+bt/sweep.py       parameter sweeps with IS/OOS split
 bt/data.py        synthetic GBM + CSV loader
 examples/         runnable demo
 tests/            unittest suite
@@ -68,7 +72,6 @@ tests/            unittest suite
 
 - Short selling
 - Breakout strategy with the same discipline
-- Parameter sweep harness with out-of-sample split
 - Trade log export (CSV) and per-trade analytics
 
 ## License

@@ -103,3 +103,23 @@ class TestMeanReversion(unittest.TestCase):
         self.assertGreaterEqual(len(sides), 2)  # bought the dip, exited on reversion
         self.assertEqual(sides[0], Side.BUY)
         self.assertEqual(sides[-1], Side.SELL)
+
+
+class TestSweep(unittest.TestCase):
+    def test_chronological_split(self):
+        from bt.sweep import split_bars
+        bars = make_bars([100.0 + i for i in range(100)])
+        ins, oos = split_bars(bars, 0.7)
+        self.assertEqual(len(ins), 70)
+        self.assertEqual(len(oos), 30)
+        self.assertLess(ins[-1].ts, oos[0].ts)  # no future in the past
+
+    def test_sweep_skips_invalid_combos(self):
+        from bt.strategies import SmaCrossover
+        from bt.sweep import sweep
+        rows = sweep(make_bars([100.0 + (i % 7) for i in range(120)]),
+                     SmaCrossover, {"fast": [2, 60], "slow": [5, 50]})
+        # valid: (2,5),(2,50),(60,...none>=50?) -> fast=60,slow=50 invalid, fast=60 slow=... 
+        fast_slow = {(r["params"]["fast"], r["params"]["slow"]) for r in rows}
+        self.assertNotIn((60, 50), fast_slow)
+        self.assertIn((2, 5), fast_slow)
