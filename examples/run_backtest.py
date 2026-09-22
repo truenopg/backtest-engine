@@ -15,7 +15,7 @@ from bt.broker import Broker, CostModel
 from bt.data import load_csv, synthetic_gbm
 from bt.engine import Backtest
 from bt.stats import summary
-from bt.strategies import BuyAndHold, SmaCrossover
+from bt.strategies import BuyAndHold, MeanReversion, SmaCrossover
 
 
 def main() -> None:
@@ -35,6 +35,7 @@ def main() -> None:
     for name, strategy in [
         ("buy&hold", BuyAndHold()),
         (f"sma {args.fast}/{args.slow}", SmaCrossover(args.fast, args.slow)),
+        ("mean-rev 20/2", MeanReversion(window=20, entry_z=2.0)),
     ]:
         bt = Backtest(strategy, Broker(args.cash, CostModel()))
         bt.run(bars)

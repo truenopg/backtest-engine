@@ -88,3 +88,18 @@ class TestSizing(unittest.TestCase):
         from bt.sizing import volatility_target
         # 20% target on 10k = 2000 vol budget; price 100, vol 20% -> 200 units
         self.assertAlmostEqual(volatility_target(10_000.0, 0.20, 100.0, 0.20), 100.0)
+
+
+class TestMeanReversion(unittest.TestCase):
+    def test_buys_the_dip_and_exits_at_mean(self):
+        from bt.strategies import MeanReversion
+        from bt import Backtest, Broker
+        # calm series, then a sharp dip, then recovery
+        prices = [100.0] * 30 + [92.0, 90.0] + [100.0] * 5
+        bt = Backtest(MeanReversion(window=20, entry_z=2.0), Broker(10_000.0))
+        bt.run(make_bars(prices))
+        from bt.core import Side
+        sides = [f.side for f in bt.broker.fills]
+        self.assertGreaterEqual(len(sides), 2)  # bought the dip, exited on reversion
+        self.assertEqual(sides[0], Side.BUY)
+        self.assertEqual(sides[-1], Side.SELL)

@@ -52,3 +52,41 @@ class SmaCrossover:
         if not bullish and broker.position > 0:
             return Order(Side.SELL, broker.position)
         return None
+
+
+class MeanReversion:
+    """Buys stretched dips and exits back at the mean (Bollinger-style).
+
+    Long-only: when the close sits more than ``entry_z`` standard deviations
+    below its rolling mean, the strategy goes long; it exits when the close
+    reverts to the mean. Sized all-in like the SMA strategy - the sizing
+    module exists for when this gets a stop.
+    """
+
+    def __init__(self, window: int = 20, entry_z: float = 2.0) -> None:
+        if entry_z <= 0:
+            raise ValueError("entry_z must be positive")
+        self.window = window
+        self.entry_z = entry_z
+        self._closes: deque = deque(maxlen=window)
+
+    def _z(self, price: float) -> Optional[float]:
+        if len(self._closes) < self.window:
+            return None
+        values = list(self._closes)
+        mean = sum(values) / len(values)
+        var = sum((v - mean) ** 2 for v in values) / len(values)
+        sd = var ** 0.5
+        return (price - mean) / sd if sd else 0.0
+
+    def on_bar(self, bar: Bar, broker: Broker) -> Optional[Order]:
+        self._closes.append(bar.close)
+        z = self._z(bar.close)
+        if z is None:
+            return None
+        if z < -self.entry_z and broker.position <= 0:
+            qty = broker.equity(bar.close) * 0.95 / bar.close
+            return Order(Side.BUY, qty)
+        if z >= 0 and broker.position > 0:
+            return Order(Side.SELL, broker.position)
+        return None
