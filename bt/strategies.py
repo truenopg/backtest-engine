@@ -90,3 +90,29 @@ class MeanReversion:
         if z >= 0 and broker.position > 0:
             return Order(Side.SELL, broker.position)
         return None
+
+
+class Breakout:
+    """Donchian-channel breakout: long on a new ``entry``-period high,
+    out on a new ``exit``-period low. Long-only trend following.
+    """
+
+    def __init__(self, entry: int = 55, exit: int = 20) -> None:
+        if entry < 2 or exit < 2:
+            raise ValueError("windows must be >= 2")
+        self.entry = entry
+        self.exit = exit
+        self._highs: deque = deque(maxlen=entry)
+        self._lows: deque = deque(maxlen=exit)
+
+    def on_bar(self, bar: Bar, broker: Broker) -> Optional[Order]:
+        prev_high = max(self._highs) if len(self._highs) == self.entry else None
+        prev_low = min(self._lows) if len(self._lows) == self.exit else None
+        self._highs.append(bar.high)
+        self._lows.append(bar.low)
+        if prev_high is not None and bar.close > prev_high and broker.position <= 0:
+            qty = broker.equity(bar.close) * 0.95 / bar.close
+            return Order(Side.BUY, qty)
+        if prev_low is not None and bar.close < prev_low and broker.position > 0:
+            return Order(Side.SELL, broker.position)
+        return None

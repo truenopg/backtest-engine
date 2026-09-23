@@ -17,9 +17,9 @@ the things most toy backtests get wrong.
 - **Position sizing** (`bt/sizing.py`): fixed-risk (size from stop distance)
   and volatility-target sizings. How much to risk matters more than the
   signal, so it gets its own module.
-- **Reference strategies**: buy & hold, an SMA crossover, and a
-  Bollinger-style mean-reversion strategy - sanity-check benchmarks every
-  engine needs.
+- **Reference strategies**: buy & hold, SMA crossover, Bollinger-style mean
+  reversion, and a Donchian breakout - the four canonical archetypes, used as
+  sanity-check benchmarks.
 - **Performance stats**: total return, CAGR, Sharpe, max drawdown.
 - **Parameter sweeps** (`bt/sweep.py`): grid-search any strategy over a
   chronological in-sample / out-of-sample split, and see the overfitting tax
@@ -47,12 +47,13 @@ Sample output (seed 4, 500 synthetic days):
    buy&hold: return +2.6%  cagr +1.3%  sharpe 0.16  maxDD -26.1%  fills 1
   sma 20/50: return +4.7%  cagr +2.3%  sharpe 0.24  maxDD -16.1%  fills 8
 mean-rev 20/2: return -5.0%  cagr -2.5%  sharpe -0.24  maxDD -20.3%  fills 18
+breakout 55/20: return -7.8%  cagr -4.0%  sharpe -0.33  maxDD -18.9%  fills 10
 ```
 
-The losing mean-reversion line is the honest one: GBM has independent
-increments, so there is no mean to revert to and a dip-buying strategy should
-lose. An engine that can't surface that null result is not trustworthy for
-strategies that do work.
+The losing mean-reversion and breakout lines are the honest ones: GBM has
+independent increments, so there is no mean to revert to and no trend to
+follow. An engine that can't surface those null results is not trustworthy
+for strategies that do work.
 
 ## Layout
 
@@ -71,7 +72,6 @@ tests/            unittest suite
 ## Roadmap
 
 - Short selling
-- Breakout strategy with the same discipline
 - Trade log export (CSV) and per-trade analytics
 
 ## License

@@ -123,3 +123,25 @@ class TestSweep(unittest.TestCase):
         fast_slow = {(r["params"]["fast"], r["params"]["slow"]) for r in rows}
         self.assertNotIn((60, 50), fast_slow)
         self.assertIn((2, 5), fast_slow)
+
+
+class TestBreakout(unittest.TestCase):
+    def test_buys_new_high_and_exits_on_breakdown(self):
+        from bt import Backtest, Broker
+        from bt.core import Side
+        from bt.strategies import Breakout
+        # flat base, breakout bar, then a collapse through the exit channel
+        prices = [100.0] * 8 + [101.0, 105.0] + [103.0] * 3 + [95.0] * 3
+        bt = Backtest(Breakout(entry=6, exit=4), Broker(10_000.0))
+        bt.run(make_bars(prices))
+        sides = [f.side for f in bt.broker.fills]
+        self.assertGreaterEqual(len(sides), 2)
+        self.assertEqual(sides[0], Side.BUY)
+        self.assertEqual(sides[-1], Side.SELL)
+
+    def test_no_position_without_breakout(self):
+        from bt import Backtest, Broker
+        from bt.strategies import Breakout
+        bt = Backtest(Breakout(entry=6, exit=4), Broker(10_000.0))
+        bt.run(make_bars([100.0] * 20))
+        self.assertEqual(len(bt.broker.fills), 0)
