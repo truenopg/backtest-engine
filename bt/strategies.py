@@ -24,17 +24,20 @@ class BuyAndHold:
 
 
 class SmaCrossover:
-    """Goes long when the fast SMA crosses above the slow SMA, flat when below.
+    """Goes long when the fast SMA crosses above the slow SMA.
 
-    Position sizing is all-in/all-out on the current equity - deliberately
-    simple; risk management belongs in a sizing layer, not the signal.
+    Long/flat by default; with ``allow_short`` it flips to a symmetric short
+    when bearish instead of going flat. Position sizing is all-in/all-out on
+    current equity - deliberately simple; risk management belongs in the
+    sizing module, not the signal.
     """
 
-    def __init__(self, fast: int = 20, slow: int = 50) -> None:
+    def __init__(self, fast: int = 20, slow: int = 50, allow_short: bool = False) -> None:
         if fast >= slow:
             raise ValueError("fast window must be smaller than slow window")
         self.fast = fast
         self.slow = slow
+        self.allow_short = allow_short
         self._closes: deque = deque(maxlen=slow)
 
     def _sma(self, window: int) -> float:
@@ -46,11 +49,18 @@ class SmaCrossover:
         if len(self._closes) < self.slow:
             return None
         bullish = self._sma(self.fast) > self._sma(self.slow)
-        if bullish and broker.position <= 0:
-            qty = broker.equity(bar.close) * 0.95 / bar.close - broker.position
-            return Order(Side.BUY, qty) if qty > 0 else None
-        if not bullish and broker.position > 0:
-            return Order(Side.SELL, broker.position)
+        target_qty = broker.equity(bar.close) * 0.95 / bar.close
+        if bullish:
+            target = target_qty
+        elif self.allow_short:
+            target = -target_qty
+        else:
+            target = 0.0
+        diff = target - broker.position
+        if diff > 0:
+            return Order(Side.BUY, diff)
+        if diff < 0:
+            return Order(Side.SELL, -diff)
         return None
 
 

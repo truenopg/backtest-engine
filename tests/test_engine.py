@@ -145,3 +145,24 @@ class TestBreakout(unittest.TestCase):
         bt = Backtest(Breakout(entry=6, exit=4), Broker(10_000.0))
         bt.run(make_bars([100.0] * 20))
         self.assertEqual(len(bt.broker.fills), 0)
+
+
+class TestShortSelling(unittest.TestCase):
+    def test_short_flip_when_bearish(self):
+        from bt.strategies import SmaCrossover
+        from bt import Backtest, Broker
+        from bt.core import Side
+        # rising then falling: crosses up then down
+        prices = [100.0 + i for i in range(8)] + [108.0 - 3 * i for i in range(8)]
+        bt = Backtest(SmaCrossover(fast=2, slow=4, allow_short=True), Broker(10_000.0))
+        bt.run(make_bars(prices))
+        self.assertLess(bt.broker.position, 0)  # ends short
+        self.assertTrue(any(f.side is Side.SELL for f in bt.broker.fills))
+
+    def test_long_flat_default_never_short(self):
+        from bt.strategies import SmaCrossover
+        from bt import Backtest, Broker
+        prices = [100.0 + i for i in range(8)] + [108.0 - 3 * i for i in range(8)]
+        bt = Backtest(SmaCrossover(fast=2, slow=4), Broker(10_000.0))
+        bt.run(make_bars(prices))
+        self.assertGreaterEqual(bt.broker.position, 0)

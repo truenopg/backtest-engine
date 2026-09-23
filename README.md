@@ -17,9 +17,9 @@ the things most toy backtests get wrong.
 - **Position sizing** (`bt/sizing.py`): fixed-risk (size from stop distance)
   and volatility-target sizings. How much to risk matters more than the
   signal, so it gets its own module.
-- **Reference strategies**: buy & hold, SMA crossover, Bollinger-style mean
-  reversion, and a Donchian breakout - the four canonical archetypes, used as
-  sanity-check benchmarks.
+- **Reference strategies**: buy & hold, SMA crossover (optionally long/short),
+  Bollinger-style mean reversion, and a Donchian breakout - the four canonical
+  archetypes, used as sanity-check benchmarks.
 - **Performance stats**: total return, CAGR, Sharpe, max drawdown.
 - **Parameter sweeps** (`bt/sweep.py`): grid-search any strategy over a
   chronological in-sample / out-of-sample split, and see the overfitting tax
@@ -71,7 +71,6 @@ tests/            unittest suite
 
 ## Roadmap
 
-- Short selling
 - Trade log export (CSV) and per-trade analytics
 
 ## License
