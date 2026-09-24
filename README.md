@@ -16,7 +16,9 @@ the things most toy backtests get wrong.
   bar close.
 - **Position sizing** (`bt/sizing.py`): fixed-risk (size from stop distance)
   and volatility-target sizings. How much to risk matters more than the
-  signal, so it gets its own module.
+  signal, so it gets its own module - `examples/sizing_experiment.py` runs the
+  same signal under all-in, fixed-risk, and vol-target sizing and shows the
+  drawdown profile change more than the return does.
 - **Reference strategies**: buy & hold, SMA crossover (optionally long/short),
   Bollinger-style mean reversion, and a Donchian breakout - the four canonical
   archetypes, used as sanity-check benchmarks.
