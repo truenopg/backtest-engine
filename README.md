@@ -1,5 +1,7 @@
 # backtest-engine
 
+[![tests](https://github.com/truenopg/backtest-engine/actions/workflows/tests.yml/badge.svg)](https://github.com/truenopg/backtest-engine/actions/workflows/tests.yml)
+
 A small event-driven backtesting engine in Python, built to be correct about
 the things most toy backtests get wrong.
 
