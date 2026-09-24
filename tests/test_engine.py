@@ -166,3 +166,20 @@ class TestShortSelling(unittest.TestCase):
         bt = Backtest(SmaCrossover(fast=2, slow=4), Broker(10_000.0))
         bt.run(make_bars(prices))
         self.assertGreaterEqual(bt.broker.position, 0)
+
+
+class TestTradeStats(unittest.TestCase):
+    def test_round_trip_pnl(self):
+        from bt import Broker, Order, Side
+        from bt.stats import round_trips, trade_stats
+        broker = Broker(10_000.0)
+        bars = make_bars([100.0, 110.0])
+        broker.execute(Order(Side.BUY, 10.0), bars[0])
+        broker.execute(Order(Side.SELL, 10.0), bars[1])
+        trips = round_trips(broker.fills)
+        self.assertEqual(len(trips), 1)
+        self.assertEqual(trips[0]["side"], "long")
+        self.assertGreater(trips[0]["pnl"], 0)  # 110 exit vs 100 entry
+        stats = trade_stats(broker.fills)
+        self.assertEqual(stats["trades"], 1)
+        self.assertEqual(stats["win_rate"], 1.0)

@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from bt.broker import Broker, CostModel
 from bt.data import load_csv, synthetic_gbm
 from bt.engine import Backtest
-from bt.stats import summary
+from bt.stats import summary, trade_stats
 from bt.strategies import Breakout, BuyAndHold, MeanReversion, SmaCrossover
 
 
@@ -47,9 +47,10 @@ def main() -> None:
             from bt.tradelog import write_trades_csv
             n = write_trades_csv(bt.broker.fills, args.trades_out)
         s = summary(bt.equity_curve)
+        ts = trade_stats(bt.broker.fills)
         print(f"{name:>12}: return {s['total_return']:+.1%}  cagr {s['cagr']:+.1%}  "
               f"sharpe {s['sharpe']:.2f}  maxDD {s['max_drawdown']:.1%}  "
-              f"fills {len(bt.broker.fills)}")
+              f"trades {ts['trades']}  win {ts['win_rate']:.0%}  PF {ts['profit_factor']:.2f}")
 
     if args.plot:
         import matplotlib

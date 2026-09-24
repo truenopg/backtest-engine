@@ -20,7 +20,8 @@ the things most toy backtests get wrong.
 - **Reference strategies**: buy & hold, SMA crossover (optionally long/short),
   Bollinger-style mean reversion, and a Donchian breakout - the four canonical
   archetypes, used as sanity-check benchmarks.
-- **Performance stats**: total return, CAGR, Sharpe, max drawdown.
+- **Performance stats**: total return, CAGR, Sharpe, max drawdown, plus
+  per-trade analytics (round trips, win rate, profit factor, expectancy).
 - **Parameter sweeps** (`bt/sweep.py`): grid-search any strategy over a
   chronological in-sample / out-of-sample split, and see the overfitting tax
   directly - the best in-sample params usually do not hold up out-of-sample.
@@ -44,10 +45,10 @@ python -m unittest discover -s tests
 Sample output (seed 4, 500 synthetic days):
 
 ```
-   buy&hold: return +2.6%  cagr +1.3%  sharpe 0.16  maxDD -26.1%  fills 1
-  sma 20/50: return +4.7%  cagr +2.3%  sharpe 0.24  maxDD -16.1%  fills 8
-mean-rev 20/2: return -5.0%  cagr -2.5%  sharpe -0.24  maxDD -20.3%  fills 18
-breakout 55/20: return -7.8%  cagr -4.0%  sharpe -0.33  maxDD -18.9%  fills 10
+   buy&hold: return +2.6%  cagr +1.3%  sharpe 0.16  maxDD -26.1%  trades 0  win 0%  PF 0.00
+  sma 20/50: return +4.7%  cagr +2.3%  sharpe 0.24  maxDD -16.1%  trades 4  win 50%  PF 1.42
+mean-rev 20/2: return -5.0%  cagr -2.5%  sharpe -0.24  maxDD -20.3%  trades 9  win 67%  PF 0.75
+breakout 55/20: return -7.8%  cagr -4.0%  sharpe -0.33  maxDD -18.9%  trades 5  win 40%  PF 0.52
 ```
 
 The losing mean-reversion and breakout lines are the honest ones: GBM has

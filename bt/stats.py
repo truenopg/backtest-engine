@@ -49,3 +49,70 @@ def summary(equity: List[float]) -> dict:
         "sharpe": sharpe(equity),
         "max_drawdown": max_drawdown(equity),
     }
+
+
+def round_trips(fills) -> List[dict]:
+    """Pair fills into round trips (flat -> position -> flat) with P&L.
+
+    Handles both long and short round trips. A round trip closes when the
+    position returns to (or crosses through) zero; partial overshoots start
+    the next trip with the remainder.
+    """
+    trips: List[dict] = []
+    open_side = None
+    open_qty = 0.0
+    open_cost = 0.0  # signed cash spent opening (incl. commission)
+    entry_ts = None
+    for f in fills:
+        signed = f.qty if f.side.value == "buy" else -f.qty
+        cash_flow = -signed * f.price - f.commission
+        if open_side is None:
+            open_side = "long" if signed > 0 else "short"
+            open_qty = signed
+            open_cost = cash_flow
+            entry_ts = f.ts
+            continue
+        same_direction = (open_side == "long" and signed > 0) or (open_side == "short" and signed < 0)
+        if same_direction:
+            open_qty += signed
+            open_cost += cash_flow
+            continue
+        # closing or flipping
+        closing_qty = min(abs(signed), abs(open_qty))
+        close_cash = cash_flow * (closing_qty / abs(signed))
+        pnl = open_cost * (closing_qty / abs(open_qty)) + close_cash
+        trips.append({
+            "side": open_side,
+            "qty": closing_qty,
+            "entry_ts": entry_ts,
+            "exit_ts": f.ts,
+            "pnl": pnl,
+        })
+        remainder = signed + open_qty
+        if remainder != 0:
+            open_side = "long" if remainder > 0 else "short"
+            open_qty = remainder
+            open_cost = cash_flow * (abs(remainder) / abs(signed))
+            entry_ts = f.ts
+        else:
+            open_side = None
+            open_qty = 0.0
+            open_cost = 0.0
+    return trips
+
+
+def trade_stats(fills) -> dict:
+    """Win rate, profit factor, and expectancy over closed round trips."""
+    trips = round_trips(fills)
+    if not trips:
+        return {"trades": 0, "win_rate": 0.0, "profit_factor": 0.0, "expectancy": 0.0}
+    wins = [t for t in trips if t["pnl"] > 0]
+    losses = [t for t in trips if t["pnl"] <= 0]
+    gross_win = sum(t["pnl"] for t in wins)
+    gross_loss = -sum(t["pnl"] for t in losses)
+    return {
+        "trades": len(trips),
+        "win_rate": len(wins) / len(trips),
+        "profit_factor": gross_win / gross_loss if gross_loss else float("inf"),
+        "expectancy": sum(t["pnl"] for t in trips) / len(trips),
+    }

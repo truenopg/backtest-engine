@@ -49,18 +49,15 @@ class SmaCrossover:
         if len(self._closes) < self.slow:
             return None
         bullish = self._sma(self.fast) > self._sma(self.slow)
-        target_qty = broker.equity(bar.close) * 0.95 / bar.close
-        if bullish:
-            target = target_qty
-        elif self.allow_short:
-            target = -target_qty
-        else:
-            target = 0.0
-        diff = target - broker.position
-        if diff > 0:
-            return Order(Side.BUY, diff)
-        if diff < 0:
-            return Order(Side.SELL, -diff)
+        full = broker.equity(bar.close) * 0.95 / bar.close
+        # trade only on regime change: enter/flip when the signal side differs
+        # from the position side, otherwise hold (no daily rebalancing)
+        if bullish and broker.position <= 0:
+            return Order(Side.BUY, full - broker.position)
+        if not bullish and broker.position >= 0:
+            qty = broker.position + full if self.allow_short else broker.position
+            if qty > 0:
+                return Order(Side.SELL, qty)
         return None
 
 
