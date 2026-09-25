@@ -49,7 +49,9 @@ def main() -> None:
         s = summary(bt.equity_curve)
         ts = trade_stats(bt.broker.fills)
         print(f"{name:>12}: return {s['total_return']:+.1%}  cagr {s['cagr']:+.1%}  "
-              f"sharpe {s['sharpe']:.2f}  maxDD {s['max_drawdown']:.1%}  "
+              f"sharpe {s['sharpe']:.2f}  sortino {s['sortino']:.2f}  "
+              f"maxDD {s['max_drawdown']:.1%} ({s['max_drawdown_duration']} bars)  "
+              f"calmar {s['calmar']:.2f}  "
               f"trades {ts['trades']}  win {ts['win_rate']:.0%}  PF {ts['profit_factor']:.2f}")
 
     if args.plot:
