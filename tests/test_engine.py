@@ -2,7 +2,8 @@ import unittest
 from datetime import datetime, timedelta
 
 from bt import Backtest, Bar, Broker, Order, Side
-from bt.stats import max_drawdown, sharpe, total_return
+from bt.stats import (cagr, calmar, max_drawdown, max_drawdown_duration,
+                      sharpe, sortino, total_return)
 from bt.strategies import BuyAndHold, SmaCrossover
 
 
@@ -67,6 +68,33 @@ class TestStats(unittest.TestCase):
 
     def test_max_drawdown(self):
         self.assertAlmostEqual(max_drawdown([100.0, 120.0, 90.0, 110.0]), -0.25)
+
+
+class TestRiskMetrics(unittest.TestCase):
+    def test_sortino_hand_computed(self):
+        # returns [-0.1, +0.2]: mean 0.05, downside dev sqrt(0.01/2)
+        import math
+        expected = 0.05 / math.sqrt(0.005) * math.sqrt(252)
+        self.assertAlmostEqual(sortino([100.0, 90.0, 108.0]), expected)
+
+    def test_sortino_does_not_punish_upside_vol(self):
+        rising = [100.0, 105.0, 121.0]
+        self.assertGreater(sharpe(rising), 0.0)
+        self.assertEqual(sortino(rising), 0.0)  # no downside deviation
+
+    def test_sortino_negative_when_only_downside(self):
+        self.assertLess(sortino([100.0, 90.0, 81.0]), 0.0)
+
+    def test_calmar_is_cagr_over_drawdown(self):
+        equity = [100.0, 80.0, 120.0, 110.0]
+        self.assertAlmostEqual(calmar(equity), cagr(equity) / abs(max_drawdown(equity)))
+
+    def test_calmar_zero_without_drawdown(self):
+        self.assertEqual(calmar([100.0, 110.0, 121.0]), 0.0)
+
+    def test_max_drawdown_duration(self):
+        self.assertEqual(max_drawdown_duration([100.0, 90.0, 95.0, 110.0, 105.0, 100.0]), 2)
+        self.assertEqual(max_drawdown_duration([100.0, 110.0, 120.0]), 0)
 
 
 if __name__ == "__main__":

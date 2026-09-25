@@ -24,7 +24,8 @@ the things most toy backtests get wrong.
 - **Reference strategies**: buy & hold, SMA crossover (optionally long/short),
   Bollinger-style mean reversion, and a Donchian breakout - the four canonical
   archetypes, used as sanity-check benchmarks.
-- **Performance stats**: total return, CAGR, Sharpe, max drawdown, plus
+- **Performance stats**: total return, CAGR, Sharpe, Sortino, max
+  drawdown (depth and duration), Calmar, plus
   per-trade analytics (round trips, win rate, profit factor, expectancy).
 - **Parameter sweeps** (`bt/sweep.py`): grid-search any strategy over a
   chronological in-sample / out-of-sample split, and see the overfitting tax

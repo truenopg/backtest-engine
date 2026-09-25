@@ -42,12 +42,53 @@ def max_drawdown(equity: List[float]) -> float:
     return worst
 
 
+def sortino(equity: List[float], periods_per_year: int = 252) -> float:
+    """Annualized return over downside deviation (target 0, all periods).
+
+    Like Sharpe but only returns below zero count as risk, so upside
+    volatility is not penalized. Returns 0.0 when there is no downside
+    deviation at all.
+    """
+    rets = _returns(equity)
+    if len(rets) < 2:
+        return 0.0
+    mean = sum(rets) / len(rets)
+    downside_var = sum(min(r, 0.0) ** 2 for r in rets) / len(rets)
+    dd = math.sqrt(downside_var)
+    return mean / dd * math.sqrt(periods_per_year) if dd else 0.0
+
+
+def calmar(equity: List[float], periods_per_year: int = 252) -> float:
+    """CAGR over absolute max drawdown. 0.0 when there was no drawdown."""
+    mdd = max_drawdown(equity)
+    if mdd == 0:
+        return 0.0
+    return cagr(equity, periods_per_year) / abs(mdd)
+
+
+def max_drawdown_duration(equity: List[float]) -> int:
+    """Longest run of consecutive bars spent below the running peak."""
+    peak = -math.inf
+    longest = current = 0
+    for v in equity:
+        if v >= peak:
+            peak = v
+            current = 0
+        else:
+            current += 1
+            longest = max(longest, current)
+    return longest
+
+
 def summary(equity: List[float]) -> dict:
     return {
         "total_return": total_return(equity),
         "cagr": cagr(equity),
         "sharpe": sharpe(equity),
+        "sortino": sortino(equity),
         "max_drawdown": max_drawdown(equity),
+        "calmar": calmar(equity),
+        "max_drawdown_duration": max_drawdown_duration(equity),
     }
 
 
