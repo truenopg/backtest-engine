@@ -61,6 +61,26 @@ independent increments, so there is no mean to revert to and no trend to
 follow. An engine that can't surface those null results is not trustworthy
 for strategies that do work.
 
+### Experiment: how much cost can an edge absorb?
+
+`examples/cost_sensitivity.py` re-runs every reference strategy at rising
+total cost per side (commission + slippage), same data:
+
+```
+  cost bps/side        buy&hold       sma 20/50   mean-rev 20/2  breakout 55/20
+              0           +2.6%           +4.8%           -4.6%           -7.6%
+              2           +2.6%           +4.7%           -5.0%           -7.8%
+              5           +2.5%           +4.4%           -5.4%           -8.1%
+             10           +2.5%           +4.0%           -6.3%           -8.5%
+             25           +2.4%           +2.9%           -8.6%           -9.8%
+             50           +2.1%           +0.9%          -12.5%          -12.0%
+```
+
+Decay speed tracks turnover: buy & hold barely notices 50 bps, the
+9-round-trip mean-reversion bleeds ~0.4 pp per 10 bps, and the SMA edge
+is halved at 50 bps. "Does it survive realistic costs?" is the first
+question to ask any backtest, so the engine makes it a one-command check.
+
 ## Layout
 
 ```
