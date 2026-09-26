@@ -97,7 +97,9 @@ tests/            unittest suite
 
 ## Roadmap
 
-- Trade log export (CSV) and per-trade analytics
+- Walk-forward analysis (rolling re-optimization instead of one IS/OOS split)
+- Benchmark-relative stats: alpha, beta, information ratio
+- Portfolio level: multi-asset strategies with shared cash
 
 ## License
 
