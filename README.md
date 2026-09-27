@@ -54,8 +54,11 @@ Sample output (seed 4, 500 synthetic days):
 ```
     buy&hold: return +2.6%  cagr +1.3%  sharpe 0.16  sortino 0.23  maxDD -26.1% (326 bars)  calmar 0.05  trades 0  win 0%  PF 0.00
    sma 20/50: return +4.7%  cagr +2.3%  sharpe 0.24  sortino 0.34  maxDD -16.1% (326 bars)  calmar 0.14  trades 4  win 50%  PF 1.42
+      vs B&H: beta 0.59  alpha +1.5%  IR 0.03  corr 0.77
 mean-rev 20/2: return -5.0%  cagr -2.5%  sharpe -0.24  sortino -0.33  maxDD -20.3% (293 bars)  calmar -0.12  trades 9  win 67%  PF 0.75
+      vs B&H: beta 0.27  alpha -2.9%  IR -0.33  corr 0.52
 breakout 55/20: return -7.8%  cagr -4.0%  sharpe -0.33  sortino -0.46  maxDD -18.9% (326 bars)  calmar -0.21  trades 5  win 40%  PF 0.52
+      vs B&H: beta 0.38  alpha -4.6%  IR -0.46  corr 0.62
 ```
 
 The losing mean-reversion and breakout lines are the honest ones: GBM has

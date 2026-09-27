@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from bt.broker import Broker, CostModel
 from bt.data import load_csv, synthetic_gbm
 from bt.engine import Backtest
-from bt.stats import summary, trade_stats
+from bt.stats import relative_summary, summary, trade_stats
 from bt.strategies import Breakout, BuyAndHold, MeanReversion, SmaCrossover
 
 
@@ -53,6 +53,10 @@ def main() -> None:
               f"maxDD {s['max_drawdown']:.1%} ({s['max_drawdown_duration']} bars)  "
               f"calmar {s['calmar']:.2f}  "
               f"trades {ts['trades']}  win {ts['win_rate']:.0%}  PF {ts['profit_factor']:.2f}")
+        if name != "buy&hold":
+            r = relative_summary(bt.equity_curve, curves["buy&hold"].equity_curve)
+            print(f"{'vs B&H':>12}: beta {r['beta']:.2f}  alpha {r['alpha']:+.1%}  "
+                  f"IR {r['information_ratio']:.2f}  corr {r['correlation']:.2f}")
 
     if args.plot:
         import matplotlib
