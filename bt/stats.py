@@ -157,3 +157,36 @@ def trade_stats(fills) -> dict:
         "profit_factor": gross_win / gross_loss if gross_loss else float("inf"),
         "expectancy": sum(t["pnl"] for t in trips) / len(trips),
     }
+
+def relative_summary(equity: List[float], benchmark: List[float],
+                     periods_per_year: int = 252) -> dict:
+    """Stats of an equity curve against a benchmark curve.
+
+    Beta and correlation come from the usual OLS moments over bar returns.
+    Alpha is the intercept annualized by simple multiplication
+    (per-bar alpha x periods). Information ratio is mean active return
+    over tracking error, annualized. Returns zeros when there are too
+    few bars or the benchmark never moves.
+    """
+    r, b = _returns(equity), _returns(benchmark)
+    n = min(len(r), len(b))
+    zero = {"beta": 0.0, "alpha": 0.0, "information_ratio": 0.0, "correlation": 0.0}
+    if n < 2:
+        return zero
+    r, b = r[:n], b[:n]
+    mr = sum(r) / n
+    mb = sum(b) / n
+    cov = sum((x - mr) * (y - mb) for x, y in zip(r, b)) / (n - 1)
+    var_b = sum((y - mb) ** 2 for y in b) / (n - 1)
+    var_r = sum((x - mr) ** 2 for x in r) / (n - 1)
+    if var_b == 0:
+        return zero
+    beta = cov / var_b
+    alpha = (mr - beta * mb) * periods_per_year
+    active = [x - y for x, y in zip(r, b)]
+    ma = sum(active) / n
+    te = math.sqrt(sum((a - ma) ** 2 for a in active) / (n - 1))
+    ir = ma / te * math.sqrt(periods_per_year) if te else 0.0
+    corr = cov / math.sqrt(var_b * var_r) if var_r else 0.0
+    return {"beta": beta, "alpha": alpha, "information_ratio": ir, "correlation": corr}
+

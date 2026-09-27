@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from bt import Backtest, Bar, Broker, Order, Side
 from bt.stats import (cagr, calmar, max_drawdown, max_drawdown_duration,
-                      sharpe, sortino, total_return)
+                      relative_summary, sharpe, sortino, total_return)
 from bt.strategies import BuyAndHold, SmaCrossover
 
 
@@ -95,6 +95,46 @@ class TestRiskMetrics(unittest.TestCase):
     def test_max_drawdown_duration(self):
         self.assertEqual(max_drawdown_duration([100.0, 90.0, 95.0, 110.0, 105.0, 100.0]), 2)
         self.assertEqual(max_drawdown_duration([100.0, 110.0, 120.0]), 0)
+
+
+def equity_from(rets, start=100.0):
+    eq = [start]
+    for r in rets:
+        eq.append(eq[-1] * (1 + r))
+    return eq
+
+
+class TestRelativeStats(unittest.TestCase):
+    def test_beta_two_for_double_leverage(self):
+        bench_rets = [0.01, -0.01, 0.02, -0.005, 0.01]
+        rel = relative_summary(equity_from([2 * r for r in bench_rets]),
+                               equity_from(bench_rets))
+        self.assertAlmostEqual(rel["beta"], 2.0)
+        self.assertAlmostEqual(rel["alpha"], 0.0)
+        self.assertAlmostEqual(rel["correlation"], 1.0)
+
+    def test_constant_outperformance_is_pure_alpha(self):
+        bench_rets = [0.01, -0.01, 0.02, -0.005, 0.01]
+        rel = relative_summary(equity_from([r + 0.001 for r in bench_rets]),
+                               equity_from(bench_rets))
+        self.assertAlmostEqual(rel["beta"], 1.0)
+        self.assertAlmostEqual(rel["alpha"], 0.252)  # 0.001 x 252
+        self.assertAlmostEqual(rel["correlation"], 1.0)
+
+    def test_information_ratio_sign_follows_active_return(self):
+        bench_rets = [0.01, -0.01, 0.02, -0.005, 0.01]
+        up = relative_summary(equity_from([r + (0.003 if i % 2 else 0.001)
+                                           for i, r in enumerate(bench_rets)]),
+                              equity_from(bench_rets))
+        self.assertGreater(up["information_ratio"], 0.0)
+        down = relative_summary(equity_from([r - (0.003 if i % 2 else 0.001)
+                                             for i, r in enumerate(bench_rets)]),
+                                equity_from(bench_rets))
+        self.assertLess(down["information_ratio"], 0.0)
+
+    def test_too_few_bars_is_zero(self):
+        rel = relative_summary([100.0], [100.0])
+        self.assertEqual(rel["beta"], 0.0)
 
 
 if __name__ == "__main__":

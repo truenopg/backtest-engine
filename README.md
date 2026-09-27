@@ -26,7 +26,9 @@ the things most toy backtests get wrong.
   archetypes, used as sanity-check benchmarks.
 - **Performance stats**: total return, CAGR, Sharpe, Sortino, max
   drawdown (depth and duration), Calmar, plus
-  per-trade analytics (round trips, win rate, profit factor, expectancy).
+  per-trade analytics (round trips, win rate, profit factor, expectancy)
+  and benchmark-relative stats (beta, alpha, information ratio,
+  correlation).
 - **Parameter sweeps** (`bt/sweep.py`): grid-search any strategy over a
   chronological in-sample / out-of-sample split, and see the overfitting tax
   directly - the best in-sample params usually do not hold up out-of-sample.
@@ -98,7 +100,6 @@ tests/            unittest suite
 ## Roadmap
 
 - Walk-forward analysis (rolling re-optimization instead of one IS/OOS split)
-- Benchmark-relative stats: alpha, beta, information ratio
 - Portfolio level: multi-asset strategies with shared cash
 
 ## License
